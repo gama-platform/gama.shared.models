@@ -1,0 +1,148 @@
+name: Publish GAMA Shared Models
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'gama.shared.models/**'
+      - 'gama.ui.shared.models/**'
+      - 'gama.feature.shared.models/**'
+      - 'gama.p2site.shared.models/**'
+      - 'pom.xml'
+      - 'LICENSE'
+      - 'THIRD_PARTY.md'
+      - '.github/workflows/publish-shared-models.yaml'
+  pull_request:
+    paths:
+      - 'gama.shared.models/**'
+      - 'gama.ui.shared.models/**'
+      - 'gama.feature.shared.models/**'
+      - 'gama.p2site.shared.models/**'
+      - 'pom.xml'
+      - 'LICENSE'
+      - 'THIRD_PARTY.md'
+      - '.github/workflows/publish-shared-models.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-models-${{ github.event_name == 'pull_request' && github.ref || 'pages' }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Set up Maven 3.9.16
+        env:
+          MAVEN_VERSION: '3.9.16'
+        run: |
+          base="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}"
+          archive="apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+          curl -fsSL --retry 3 "$base/$archive" -o "$RUNNER_TEMP/$archive"
+          curl -fsSL --retry 3 "$base/$archive.sha512" -o "$RUNNER_TEMP/$archive.sha512"
+          printf '%s  %s\n' "$(cat "$RUNNER_TEMP/$archive.sha512")" "$RUNNER_TEMP/$archive" | sha512sum --check
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_VERSION}/bin" >> "$GITHUB_PATH"
+      - name: Build the update site
+        run: |
+          qualifier="$(date -u +%Y%m%d%H%M%S)-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mvn -B "-DforceContextQualifier=$qualifier" -DskipTests package
+      - name: Verify thin-site contents
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import xml.etree.ElementTree as ET
+          repository = Path("gama.p2site.shared.models/target/repository")
+          with ZipFile(repository / "artifacts.jar") as archive:
+              artifacts = ET.fromstring(archive.read("artifacts.xml"))
+          actual = {(a.get("classifier"), a.get("id")) for a in artifacts.findall("artifacts/artifact")}
+          expected = {
+              ("osgi.bundle", "gama.shared.models"),
+              ("osgi.bundle", "gama.ui.shared.models"),
+              ("org.eclipse.update.feature", "gama.feature.shared.models"),
+          }
+          if actual != expected:
+              raise SystemExit(f"Unexpected thin-site artifacts: {actual}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shared-models-p2
+          path: gama.p2site.shared.models/target/repository/
+          retention-days: 7
+
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v4
+        with:
+          name: shared-models-p2
+          path: incoming
+      - name: Restore retained repositories
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          mkdir _site
+          git -C _site init -b shared-models-site
+          git -C _site remote add origin "https://github.com/${REPOSITORY}.git"
+          gh auth setup-git
+          status=0
+          git -C _site ls-remote --exit-code --heads origin refs/heads/shared-models-site > "$RUNNER_TEMP/site-ref" || status=$?
+          if [ "$status" -eq 0 ]; then
+            git -C _site fetch --depth=1 origin shared-models-site
+            git -C _site checkout -B shared-models-site FETCH_HEAD
+          elif [ "$status" -ne 2 ]; then
+            exit "$status"
+          fi
+      - name: Assemble versioned composite repository
+        env:
+          RELEASE: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          cp LICENSE THIRD_PARTY.md incoming/
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          provenance = {
+              "commit": os.environ["GITHUB_SHA"],
+              "source": f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/tree/{os.environ["GITHUB_SHA"]}',
+              "run": f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}',
+          }
+          Path("incoming/provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+          PY
+          python3 gama.p2site.shared.models/publish.py incoming _site "$RELEASE"
+          cp gama.p2site.shared.models/index.html _site/index.html
+          cp LICENSE THIRD_PARTY.md _site/
+      - name: Retain immutable repositories
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git -C _site config user.name "github-actions[bot]"
+          git -C _site config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C _site add .
+          git -C _site commit -m "Publish shared models build ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git -C _site push origin HEAD:refs/heads/shared-models-site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

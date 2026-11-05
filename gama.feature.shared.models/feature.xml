@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="gama.feature.shared.models" label="GAMA Shared Models"
+      version="0.0.0.qualifier" provider-name="UMMISCO">
+   <description url="https://github.com/gama-platform/gama.shared.models">
+      Shared models plug-ins for GAMA. This initial scaffold contains empty
+      logic and UI bundles, without runtime contributions or GAML extensions.
+   </description>
+   <copyright>
+      Copyright (c) 2007-2026 UMI 209 UMMISCO IRD/SU &amp; Partners.
+   </copyright>
+   <license url="license.html">
+      GAMA Shared Models is licensed under GNU GPL version 3.
+      Unmodified third-party components retain their own licenses and notices.
+   </license>
+   <url>
+      <update label="GAMA Shared Models" url="https://gama-platform.org/gama.shared.models/"/>
+   </url>
+   <plugin id="gama.shared.models" version="0.0.0" unpack="false"/>
+   <plugin id="gama.ui.shared.models" version="0.0.0" unpack="false"/>
+</feature>

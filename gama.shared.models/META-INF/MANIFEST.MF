@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GAMA Shared Models
+Bundle-SymbolicName: gama.shared.models;singleton:=true
+Bundle-Version: 0.0.0.qualifier
+Bundle-Vendor: UMMISCO
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-License: https://www.gnu.org/licenses/gpl-3.0.html

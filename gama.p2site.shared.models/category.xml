@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+  <description name="GAMA Shared Models">Shared models plug-ins for GAMA.</description>
+  <feature id="gama.feature.shared.models" version="0.0.0">
+    <category name="gama.shared.models"/>
+  </feature>
+  <category-def name="gama.shared.models" label="GAMA Shared Models"/>
+  <repository-reference location="https://download.eclipse.org/releases/2026-03/" enabled="true"/>
+</site>
