@@ -2,10 +2,11 @@
 <?compositeMetadataRepository version="1.0.0"?>
 <repository name="GAMA Shared Models" type="org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository" version="1.0.0">
   <properties size="1">
-    <property name="p2.timestamp" value="1793861140036" />
+    <property name="p2.timestamp" value="1793863438300" />
   </properties>
-  <children size="1">
+  <children size="2">
     <child location="releases/41982492602-1" />
+    <child location="releases/41986901902-1" />
   </children>
   <references size="2">
     <repository uri="https://download.eclipse.org/releases/2026-03/" url="https://download.eclipse.org/releases/2026-03/" type="0" options="1" />
