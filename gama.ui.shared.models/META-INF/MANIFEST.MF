@@ -4,6 +4,8 @@ Bundle-Name: GAMA Shared Models UI
 Bundle-SymbolicName: gama.ui.shared.models;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-License: https://www.gnu.org/licenses/gpl-3.0.html
-Require-Bundle: gama.shared.models
+Require-Bundle: gama.shared.models,
+ gama.ui.navigator
+Import-Package: org.osgi.framework

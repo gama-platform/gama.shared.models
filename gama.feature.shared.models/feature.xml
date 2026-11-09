@@ -2,8 +2,8 @@
 <feature id="gama.feature.shared.models" label="GAMA Shared Models"
       version="0.0.0.qualifier" provider-name="UMMISCO">
    <description url="https://github.com/gama-platform/gama.shared.models">
-      Shared models plug-ins for GAMA. This initial scaffold contains empty
-      logic and UI bundles, without runtime contributions or GAML extensions.
+      Discover community GAMA projects in the navigator, browse their files
+      and import selected ZIP projects as independent workspace copies.
    </description>
    <copyright>
       Copyright (c) 2007-2026 UMI 209 UMMISCO IRD/SU &amp; Partners.

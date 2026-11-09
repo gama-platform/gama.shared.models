@@ -11,6 +11,7 @@ from zipfile import ZipFile
 
 DEPENDENCY_SITES = (
     "https://download.eclipse.org/releases/2026-03/",
+    "https://updates.gama-platform.org/0.0.0/",
 )
 
 

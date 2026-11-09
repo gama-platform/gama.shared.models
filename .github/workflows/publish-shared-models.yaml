@@ -23,6 +23,11 @@ on:
       - 'THIRD_PARTY.md'
       - '.github/workflows/publish-shared-models.yaml'
   workflow_dispatch:
+    inputs:
+      gama_target_repository:
+        description: Compatible GAMA p2 site containing the navigator contribution API
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -53,9 +58,12 @@ jobs:
           tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_VERSION}/bin" >> "$GITHUB_PATH"
       - name: Build the update site
+        env:
+          GAMA_TARGET_REPOSITORY: ${{ inputs.gama_target_repository || vars.GAMA_TARGET_REPOSITORY || 'https://updates.gama-platform.org/0.0.0/' }}
         run: |
           qualifier="$(date -u +%Y%m%d%H%M%S)-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          mvn -B "-DforceContextQualifier=$qualifier" -DskipTests package
+          mvn -B "-DforceContextQualifier=$qualifier" \
+            "-Dgama.target.repository=$GAMA_TARGET_REPOSITORY" -DskipTests package
       - name: Verify thin-site contents
         run: |
           python3 - <<'PY'

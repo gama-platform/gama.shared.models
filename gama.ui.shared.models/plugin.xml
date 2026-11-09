@@ -1,3 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
-<plugin/>
+<plugin>
+   <extension point="gama.ui.navigator.topLevelFolders">
+      <folder id="gama.ui.shared.models.catalogue"
+            class="gama.ui.shared.models.SharedModelsFolderProvider" before="user" order="0"/>
+   </extension>
+   <extension point="org.eclipse.ui.commands">
+      <command id="gama.ui.shared.models.details" name="Show shared model details"
+            defaultHandler="gama.ui.shared.models.SharedModelsHandler"/>
+      <command id="gama.ui.shared.models.open" name="Open shared model page"
+            defaultHandler="gama.ui.shared.models.SharedModelsHandler"/>
+      <command id="gama.ui.shared.models.import" name="Import shared project"
+            defaultHandler="gama.ui.shared.models.SharedModelsHandler"/>
+   </extension>
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:navigator.menu?after=additions">
+         <command commandId="gama.ui.shared.models.details" label="Show details..." style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate ifEmpty="false">
+                     <instanceof value="gama.ui.shared.models.SharedModelsFolder$ProjectNode"/>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command commandId="gama.ui.shared.models.open" label="Open source page" style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate ifEmpty="false">
+                     <or>
+                        <instanceof value="gama.ui.shared.models.SharedModelsFolder$ProjectNode"/>
+                        <instanceof value="gama.ui.shared.models.SharedModelsFolder$FileNode"/>
+                     </or>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command commandId="gama.ui.shared.models.import" label="Import into workspace..." style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate ifEmpty="false">
+                     <instanceof value="gama.ui.shared.models.SharedModelsFolder$ProjectNode"/>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+</plugin>
