@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='1'>
+  <unit id='gama.shared.models' version='0.0.0.202611091234' generation='2'>
+    <update id='gama.shared.models' range='[0.0.0,0.0.0.202611091234)' severity='0'/>
+    <properties size='6'>
+      <property name='org.eclipse.equinox.p2.name' value='GAMA Shared Models'/>
+      <property name='org.eclipse.equinox.p2.provider' value='UMMISCO'/>
+      <property name='maven-groupId' value='org.gama'/>
+      <property name='maven-artifactId' value='gama.shared.models'/>
+      <property name='maven-version' value='0.0.0-SNAPSHOT'/>
+      <property name='maven-type' value='eclipse-plugin'/>
+    </properties>
+    <provides size='5'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='gama.shared.models' version='0.0.0.202611091234'/>
+      <provided namespace='osgi.bundle' name='gama.shared.models' version='0.0.0.202611091234'/>
+      <provided namespace='java.package' name='gama.shared.models' version='0.0.0'/>
+      <provided namespace='osgi.identity' name='gama.shared.models' version='0.0.0.202611091234'>
+        <properties size='1'>
+          <property name='type' value='osgi.bundle'/>
+        </properties>
+      </provided>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='4'>
+      <required namespace='java.package' name='com.fasterxml.jackson.core' range='0.0.0'/>
+      <required namespace='java.package' name='com.fasterxml.jackson.databind' range='0.0.0'/>
+      <requiredProperties namespace='osgi.ee' match='(&amp;(osgi.ee=JavaSE)(version=25))'>
+        <description>
+          gama.shared.models
+        </description>
+      </requiredProperties>
+      <required namespace='org.eclipse.equinox.p2.iu' name='gama.shared.models.source' range='[0.0.0.202611091234,0.0.0.202611091234]' optional='true'>
+        <filter>
+          (org.eclipse.update.install.sources=true)
+        </filter>
+      </required>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='gama.shared.models' version='0.0.0.202611091234'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: gama.shared.models;singleton:=true&#xA;Bundle-Version: 0.0.0.202611091234&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>

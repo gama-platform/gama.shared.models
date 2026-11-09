@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?artifactRepository version='1.1.0'?>
+<artifacts size='1'>
+  <artifact classifier='org.eclipse.update.feature' id='gama.feature.shared.models' version='0.0.0.202611091234'>
+    <properties size='9'>
+      <property name='artifact.size' value='1377'/>
+      <property name='download.size' value='1377'/>
+      <property name='download.checksum.sha-512' value='4c9c0729dc81b258f73146957711db001c4c100087319fe49caab9164925438fc2b4fa05cae9eb2d5b7628b4bfa4496f100ecdaeca8b9b4b6de6c82b3547e109'/>
+      <property name='download.checksum.sha-256' value='23f22c042af773e50b3f17853416b4475a814e928f64bc2dc882d89bbbd1d9f6'/>
+      <property name='maven-groupId' value='org.gama'/>
+      <property name='maven-artifactId' value='gama.feature.shared.models'/>
+      <property name='maven-version' value='0.0.0-SNAPSHOT'/>
+      <property name='maven-type' value='eclipse-feature'/>
+      <property name='download.contentType' value='application/zip'/>
+    </properties>
+  </artifact>
+</artifacts>

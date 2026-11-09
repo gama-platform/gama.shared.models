@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GAMA Shared Models
+Bundle-SymbolicName: gama.shared.models;singleton:=true
+Bundle-Version: 0.0.0.202611091234
+Bundle-Vendor: UMMISCO
+Bundle-License: https://www.gnu.org/licenses/gpl-3.0.html
+Import-Package: com.fasterxml.jackson.core,com.fasterxml.jackson.databin
+ d
+Export-Package: gama.shared.models
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=25))"
+

@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='2'>
+  <unit id='gama.feature.shared.models.feature.group' version='0.0.0.202611091234' singleton='false'>
+    <update id='gama.feature.shared.models.feature.group' range='[0.0.0,0.0.0.202611091234)' severity='0'/>
+    <properties size='9'>
+      <property name='org.eclipse.equinox.p2.name' value='GAMA Shared Models'/>
+      <property name='org.eclipse.equinox.p2.description' value='Discover community GAMA projects in the navigator, browse their files&#xA;      and import selected ZIP projects as independent workspace copies.'/>
+      <property name='org.eclipse.equinox.p2.description.url' value='https://github.com/gama-platform/gama.shared.models'/>
+      <property name='org.eclipse.equinox.p2.provider' value='UMMISCO'/>
+      <property name='org.eclipse.equinox.p2.type.group' value='true'/>
+      <property name='maven-groupId' value='org.gama'/>
+      <property name='maven-artifactId' value='gama.feature.shared.models'/>
+      <property name='maven-version' value='0.0.0-SNAPSHOT'/>
+      <property name='maven-type' value='eclipse-feature'/>
+    </properties>
+    <provides size='1'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='gama.feature.shared.models.feature.group' version='0.0.0.202611091234'/>
+    </provides>
+    <requires size='3'>
+      <required namespace='org.eclipse.equinox.p2.iu' name='gama.shared.models' range='[0.0.0.202611091234,0.0.0.202611091234]'/>
+      <required namespace='org.eclipse.equinox.p2.iu' name='gama.ui.shared.models' range='[0.0.0.202611091234,0.0.0.202611091234]'/>
+      <required namespace='org.eclipse.equinox.p2.iu' name='gama.feature.shared.models.feature.jar' range='[0.0.0.202611091234,0.0.0.202611091234]'>
+        <filter>
+          (org.eclipse.update.install.features=true)
+        </filter>
+      </required>
+    </requires>
+    <licenses size='1'>
+      <license uri='license.html' url='license.html'>
+        GAMA Shared Models is licensed under GNU GPL version 3.&#xA;      Unmodified third-party components retain their own licenses and notices.
+      </license>
+    </licenses>
+    <copyright>
+      Copyright (c) 2007-2026 UMI 209 UMMISCO IRD/SU &amp; Partners.
+    </copyright>
+  </unit>
+  <unit id='gama.feature.shared.models.feature.jar' version='0.0.0.202611091234'>
+    <properties size='8'>
+      <property name='org.eclipse.equinox.p2.name' value='GAMA Shared Models'/>
+      <property name='org.eclipse.equinox.p2.description' value='Discover community GAMA projects in the navigator, browse their files&#xA;      and import selected ZIP projects as independent workspace copies.'/>
+      <property name='org.eclipse.equinox.p2.description.url' value='https://github.com/gama-platform/gama.shared.models'/>
+      <property name='org.eclipse.equinox.p2.provider' value='UMMISCO'/>
+      <property name='maven-groupId' value='org.gama'/>
+      <property name='maven-artifactId' value='gama.feature.shared.models'/>
+      <property name='maven-version' value='0.0.0-SNAPSHOT'/>
+      <property name='maven-type' value='eclipse-feature'/>
+    </properties>
+    <provides size='3'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='gama.feature.shared.models.feature.jar' version='0.0.0.202611091234'/>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' version='1.0.0'/>
+      <provided namespace='org.eclipse.update.feature' name='gama.feature.shared.models' version='0.0.0.202611091234'/>
+    </provides>
+    <filter>
+      (org.eclipse.update.install.features=true)
+    </filter>
+    <artifacts size='1'>
+      <artifact classifier='org.eclipse.update.feature' id='gama.feature.shared.models' version='0.0.0.202611091234'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='zipped'>
+          true
+        </instruction>
+      </instructions>
+    </touchpointData>
+    <licenses size='1'>
+      <license uri='license.html' url='license.html'>
+        GAMA Shared Models is licensed under GNU GPL version 3.&#xA;      Unmodified third-party components retain their own licenses and notices.
+      </license>
+    </licenses>
+    <copyright>
+      Copyright (c) 2007-2026 UMI 209 UMMISCO IRD/SU &amp; Partners.
+    </copyright>
+  </unit>
+</units>

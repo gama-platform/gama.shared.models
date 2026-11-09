@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?artifactRepository version='1.1.0'?>
+<artifacts size='1'>
+  <artifact classifier='osgi.bundle' id='gama.ui.shared.models' version='0.0.0.202611091234'>
+    <properties size='8'>
+      <property name='artifact.size' value='32518'/>
+      <property name='download.size' value='32518'/>
+      <property name='download.checksum.sha-512' value='2532f4eab995bd44104dfcef96f636d477884defe65ae5107497e233b2a0203211ff2038709742dcaffbe8a6cf714e2dd94cca04dc78869ce482cc852b1dc152'/>
+      <property name='download.checksum.sha-256' value='cd037ab166aa2a61331bece630d427199fdcb9d76602eca038f9238214eac5e5'/>
+      <property name='maven-groupId' value='org.gama'/>
+      <property name='maven-artifactId' value='gama.ui.shared.models'/>
+      <property name='maven-version' value='0.0.0-SNAPSHOT'/>
+      <property name='maven-type' value='eclipse-plugin'/>
+    </properties>
+  </artifact>
+</artifacts>
