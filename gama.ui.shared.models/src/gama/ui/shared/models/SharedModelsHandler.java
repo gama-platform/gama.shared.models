@@ -22,7 +22,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import gama.ui.shared.models.SharedModelsFolder.FileNode;
 import gama.ui.shared.models.SharedModelsFolder.ProjectNode;
 
 public final class SharedModelsHandler extends AbstractHandler {
@@ -30,28 +29,25 @@ public final class SharedModelsHandler extends AbstractHandler {
     public Object execute(final ExecutionEvent event) throws ExecutionException {
         if (!(HandlerUtil.getCurrentSelection(event) instanceof IStructuredSelection selection)) return null;
         final Object selected = selection.getFirstElement();
-        final ProjectNode node = selected instanceof ProjectNode project ? project
-                : selected instanceof FileNode file ? file.remoteProject() : null;
+        final ProjectNode node = selected instanceof ProjectNode project ? project : null;
         if (node == null) throw new ExecutionException("Select a shared project");
         final Shell shell = HandlerUtil.getActiveShell(event);
         switch (event.getCommand().getId()) {
             case "gama.ui.shared.models.open" -> {
-                if (selected instanceof FileNode file) {
-                    openPage(node.owner.repository.filePage(node.project, file.path));
-                } else {
-                    node.owner.run("Opening " + node.getName(),
-                            (monitor, cancelled) -> node.owner.repository.resolve(node.project, cancelled),
-                            project -> {
-                                node.project = project;
-                                openPage(project.homepage());
-                            }, error -> showError(shell, error));
-                }
+                node.owner.run("Opening " + node.getName(),
+                        (monitor, cancelled) -> node.owner.repository.resolve(node.project, cancelled),
+                        project -> {
+                            node.update(project);
+                            node.owner.changed(node);
+                            openPage(project.homepage());
+                        }, error -> showError(shell, error));
             }
-            case "gama.ui.shared.models.details" -> node.owner.run("Reading " + node.getName(),
+            case "gama.ui.shared.models.properties" -> node.owner.run("Reading " + node.getName(),
                     (monitor, cancelled) -> node.owner.repository.resolve(node.project, cancelled),
                     project -> {
-                        node.project = project;
-                        if (!shell.isDisposed()) new DetailsDialog(shell, project.name(), project.description()).open();
+                        node.update(project);
+                        node.owner.changed(node);
+                        if (!shell.isDisposed()) new PropertiesDialog(shell, project.name(), project.propertiesText()).open();
                     }, error -> showError(shell, error));
             case "gama.ui.shared.models.import" -> {
                 final InputDialog dialog = new InputDialog(shell, "Import shared project",
@@ -74,7 +70,7 @@ public final class SharedModelsHandler extends AbstractHandler {
                         return ProjectImporter.importProject(prepared, name, monitor, cancelled);
                     }
                 }, project -> {
-                    if (!shell.isDisposed()) MessageDialog.openInformation(shell, "Shared Models",
+                    if (!shell.isDisposed()) MessageDialog.openInformation(shell, "Community",
                             "Imported " + project.getName() + " into User projects.\n"
                                     + "This is an independent local copy; remote refresh will not change it.");
                 }, error -> showError(shell, error));
@@ -97,14 +93,14 @@ public final class SharedModelsHandler extends AbstractHandler {
     }
 
     private static void showError(final Shell shell, final Exception error) {
-        if (!shell.isDisposed()) MessageDialog.openError(shell, "Shared Models",
+        if (!shell.isDisposed()) MessageDialog.openError(shell, "Community",
                 error.getMessage() == null ? error.toString() : error.getMessage());
     }
 
-    private static final class DetailsDialog extends Dialog {
+    private static final class PropertiesDialog extends Dialog {
         private final String title;
         private final String description;
-        DetailsDialog(final Shell parent, final String title, final String description) {
+        PropertiesDialog(final Shell parent, final String title, final String description) {
             super(parent);
             this.title = title;
             this.description = description;
@@ -112,7 +108,7 @@ public final class SharedModelsHandler extends AbstractHandler {
         }
         @Override protected void configureShell(final Shell shell) {
             super.configureShell(shell);
-            shell.setText(title);
+            shell.setText(title + " - Properties");
         }
         @Override protected Control createDialogArea(final Composite parent) {
             final Composite area = (Composite) super.createDialogArea(parent);

@@ -22,6 +22,7 @@ import java.util.zip.ZipFile;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import gama.shared.models.RemoteProject.Property;
 import gama.shared.models.RemoteProject.Release;
 
 /** Network and archive operations never create workspace resources. */
@@ -47,9 +48,9 @@ public final class ModelRepository {
             if (!id.matches("[a-z0-9]+(-[a-z0-9]+)*")) throw new IOException("Invalid registry model ID");
             final String path = text(entry, "path");
             if (!path.equals("models/" + id + ".json")) throw new IOException("Invalid registry entry path");
-            projects.add(new RemoteProject(id, text(entry, "name"), "Published models",
-                    "Expand to browse this model; Show details to read its description.",
-                    REGISTRY.resolve(path), null, null, List.of(), null));
+            check(cancelled);
+            projects.add(resolve(new RemoteProject(id, text(entry, "name"), "Published models",
+                    "", REGISTRY.resolve(path), null, null, -1, null, List.of()), cancelled));
         }
         return new ModelCatalogue(projects, document.warning());
     }
@@ -74,11 +75,14 @@ public final class ModelRepository {
             final String root = marker.substring(0, marker.length() - "/.project".length());
             final String name = root.substring(root.lastIndexOf('/') + 1);
             final String group = root.contains("/") ? root.substring(0, root.indexOf('/')) : "Projects";
-            final List<String> files = paths.stream().filter(p -> p.startsWith(root + "/"))
-                    .map(p -> p.substring(root.length() + 1)).sorted().toList();
+            final int modelCount = (int) paths.stream().filter(p -> p.startsWith(root + "/"))
+                    .filter(p -> p.endsWith(".gaml")).count();
             projects.add(new RemoteProject("repository:" + root, name, group,
-                    "Project stored in " + REPOSITORY + "/" + root + ".\nSnapshot: " + commit,
-                    githubPage(commit, root), root, commit, files, null));
+                    "Project stored in " + REPOSITORY + "/" + root + ".",
+                    githubPage(commit, root), root, commit, modelCount, null,
+                    List.of(new Property("Repository", REPOSITORY),
+                            new Property("Location", root), new Property("Category", group),
+                            new Property("Models", Integer.toString(modelCount)))));
         }
         return new ModelCatalogue(projects, joinWarnings(head.warning(), tree.warning()));
     }
@@ -98,26 +102,48 @@ public final class ModelRepository {
         final URI url = https(text(version, "url"));
         final Release release = new Release(text(version, "version"), text(version, "gama_version"),
                 text(version, "format"), url, hash, size, "available".equals(text(version, "status")));
-        final StringBuilder description = new StringBuilder(text(document.json(), "description"));
-        description.append("\n\nVersion: ").append(release.version()).append("\nGAMA: ")
-                .append(release.gamaVersion()).append("\nFormat: ").append(release.format())
-                .append("\nAvailability: ").append(release.available() ? "available" : "unavailable");
-        description.append("\nAuthors: ");
-        for (final JsonNode author : array(document.json(), "authors")) {
-            description.append(text(author, "name")).append("; ");
+        final JsonNode modelFiles = version.path("gaml_files");
+        final int modelCount = modelFiles.isArray() ? modelFiles.size() : -1;
+        final String description = text(document.json(), "description");
+        final List<Property> properties = new ArrayList<>();
+        final List<String> authors = new ArrayList<>();
+        final JsonNode authorNodes = document.json().path("authors");
+        if (!authorNodes.isMissingNode() && !authorNodes.isNull()) {
+            for (final JsonNode author : array(document.json(), "authors")) {
+                authors.add(text(author, "name"));
+            }
         }
+        if (!authors.isEmpty()) properties.add(new Property(authors.size() == 1 ? "Author" : "Authors",
+                String.join(", ", authors)));
+        properties.add(new Property("Description", description));
+        properties.add(new Property("Version", release.version()));
+        properties.add(new Property("GAMA", release.gamaVersion()));
+        properties.add(new Property("Format", release.format()));
+        properties.add(new Property("Availability", release.available() ? "available" : "unavailable"));
         if (document.json().path("license").isTextual()) {
-            description.append("\nLicense: ").append(text(document.json(), "license"));
+            properties.add(new Property("License", text(document.json(), "license")));
         }
-        if (document.warning() != null) description.append("\n\n").append(document.warning());
-        final String homepage = document.json().path("homepage").asText("");
-        return new RemoteProject(project.id(), project.name(), project.group(), description.toString(),
-                homepage.isBlank() ? url : webPage(homepage), null, null, List.of(), release);
+        if (document.warning() != null) properties.add(new Property("Warning", document.warning()));
+        final JsonNode homepage = document.json().path("homepage");
+        final URI home = homepage.isTextual() && !homepage.asText().isBlank()
+                ? webPage(homepage.asText()) : null;
+        final URI repository = repositoryPage(url, home);
+        properties.add(new Property("Repository", repository.toString()));
+        if (modelCount >= 0) properties.add(new Property("Models", Integer.toString(modelCount)));
+        return new RemoteProject(project.id(), project.name(), project.group(), description,
+                repository, null, null, modelCount, release, properties);
     }
 
-    public URI filePage(final RemoteProject project, final String path) {
-        return project.isRepositoryProject()
-                ? githubPage(project.commit(), project.repositoryPath() + "/" + path) : project.homepage();
+    private static URI repositoryPage(final URI archive, final URI homepage) {
+        final String host = archive.getHost();
+        final String[] parts = archive.getPath().split("/");
+        if ("github.com".equalsIgnoreCase(host) && parts.length > 4 && "archive".equals(parts[3])) {
+            return URI.create("https://github.com/" + parts[1] + "/" + parts[2]);
+        }
+        if ("codeload.github.com".equalsIgnoreCase(host) && parts.length > 3 && "zip".equals(parts[3])) {
+            return URI.create("https://github.com/" + parts[1] + "/" + parts[2]);
+        }
+        return homepage == null ? archive : homepage;
     }
 
     private static URI githubPage(final String commit, final String path) {
@@ -395,12 +421,6 @@ public final class ModelRepository {
             try (var paths = Files.walk(root)) {
                 return paths.filter(p -> !p.equals(root)).map(p -> root.relativize(p).toString().replace('\\', '/')
                         + (Files.isDirectory(p) ? "/" : "")).sorted().toList();
-            }
-        }
-        public List<String> files() throws IOException {
-            try (var paths = Files.walk(root)) {
-                return paths.filter(Files::isRegularFile)
-                        .map(p -> root.relativize(p).toString().replace('\\', '/')).sorted().toList();
             }
         }
         @Override

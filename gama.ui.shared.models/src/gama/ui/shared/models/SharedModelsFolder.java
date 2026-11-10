@@ -38,7 +38,7 @@ public final class SharedModelsFolder extends TopLevelFolder {
     private Object[] sources;
 
     SharedModelsFolder(final NavigatorRoot root, final ModelRepository repository) {
-        super(root, "Shared Models", icon(IGamaIcons.FOLDER_PLUGIN),
+        super(root, "Community", icon(IGamaIcons.FOLDER_COMMUNITY),
                 "Browse community projects; import only those you choose", IGamaColors.BLUE);
         this.repository = repository;
         manager = root.getManager();
@@ -54,6 +54,7 @@ public final class SharedModelsFolder extends TopLevelFolder {
     @Override public Object[] getNavigatorChildren() { return sources; }
     @Override public Object[] getCachedChildren() { return sources; }
     @Override public boolean hasChildren() { return true; }
+    @Override public boolean supportsWorkspaceActions() { return false; }
 
     @Override
     public void refresh(final IProgressMonitor monitor) {
@@ -125,7 +126,7 @@ public final class SharedModelsFolder extends TopLevelFolder {
         }
     }
 
-    private void changed(final VirtualContent<?> node) { manager.refreshContent(node); }
+    void changed(final VirtualContent<?> node) { manager.refreshContent(node); }
 
     static ImageDescriptor icon(final String name) { return GamaIcon.named(name).descriptor(); }
 
@@ -210,80 +211,41 @@ public final class SharedModelsFolder extends TopLevelFolder {
 
     public static final class ProjectNode extends Node {
         volatile RemoteProject project;
-        private boolean requested;
 
         ProjectNode(final VirtualContent<?> parent, final RemoteProject project) {
             super(parent, project.name(), project.id(), VirtualContentType.PROJECT);
-            this.project = project;
+            update(project);
         }
 
-        @Override public boolean hasChildren() { return !requested || super.hasChildren(); }
-        @Override public String getExplanation() { return project.description(); }
+        void update(final RemoteProject resolved) {
+            project = resolved;
+            children = resolved.properties().stream().map(property -> new PropertyNode(this, property)).toArray();
+        }
+
+        @Override public String getExplanation() { return "remote project"; }
         @Override public void getSuffix(final StringBuilder sb) {
-            if (project.release() != null) sb.append(project.release().version());
-        }
-
-        @Override
-        public Object[] getNavigatorChildren() {
-            if (!requested) {
-                requested = true;
-                children = new Object[] { new MessageNode(this, "Loading project...", "loading") };
-                owner.run("Browsing " + getName(), (monitor, cancelled) -> {
-                    final RemoteProject resolved = owner.repository.resolve(project, cancelled);
-                    if (resolved.isRepositoryProject()) return new Listing(resolved, resolved.files());
-                    try (var prepared = owner.repository.prepare(resolved, cancelled)) {
-                        return new Listing(resolved, prepared.entries());
-                    }
-                }, listing -> {
-                    project = listing.project();
-                    children = fileTree(this, listing.files(), "");
-                    owner.changed(this);
-                }, error -> {
-                    children = new Object[] { new MessageNode(this, error.getMessage() + " (Refresh to retry)", "error") };
-                    owner.changed(this);
-                });
+            if (project.modelCount() >= 0) {
+                sb.append(project.modelCount()).append(project.modelCount() == 1 ? " model" : " models");
+            } else {
+                sb.append("model count unavailable");
             }
-            return children;
         }
     }
 
-    private record Listing(RemoteProject project, List<String> files) {}
+    private static final class PropertyNode extends Node {
+        private final String value;
 
-    private static Object[] fileTree(final VirtualContent<?> parent, final List<String> files, final String prefix) {
-        final TreeMap<String, List<String>> folders = new TreeMap<>();
-        final TreeMap<String, FileNode> leaves = new TreeMap<>();
-        for (final String file : files) {
-            final String relative = file.substring(prefix.length());
-            if (relative.isEmpty()) continue;
-            final int slash = relative.indexOf('/');
-            if (slash < 0) leaves.put(relative, new FileNode(parent, relative, file));
-            else folders.computeIfAbsent(relative.substring(0, slash), key -> new ArrayList<>()).add(file);
+        PropertyNode(final ProjectNode parent, final RemoteProject.Property property) {
+            super(parent, property.name(), property.name(), VirtualContentType.NONE);
+            value = property.value();
         }
-        final List<Node> nodes = new ArrayList<>();
-        folders.forEach((name, paths) -> {
-            final Node folder = new Node(parent, name, prefix + name, VirtualContentType.FOLDER);
-            folder.children = fileTree(folder, paths, prefix + name + "/");
-            nodes.add(folder);
-        });
-        nodes.addAll(leaves.values());
-        return nodes.toArray();
-    }
 
-    public static final class FileNode extends Node {
-        final String path;
-        FileNode(final VirtualContent<?> parent, final String name, final String path) {
-            super(parent, name, path, VirtualContentType.FILE);
-            this.path = path;
+        @Override public void getSuffix(final StringBuilder sb) {
+            sb.append(value.replaceAll("\\s+", " "));
         }
-        ProjectNode remoteProject() {
-            VirtualContent<?> parent = getParent();
-            while (!(parent instanceof ProjectNode)) parent = parent.getParent();
-            return (ProjectNode) parent;
-        }
-        @Override public boolean handleDoubleClick() {
-            SharedModelsHandler.openPage(owner.repository.filePage(remoteProject().project, path));
-            return true;
-        }
+        @Override public String getStatusMessage() { return getName() + ": " + value; }
+        @Override public String getStatusTooltip() { return getStatusMessage(); }
+        @Override public ImageDescriptor getImageDescriptor() { return icon("generic/action.properties"); }
     }
 
     private static final class MessageNode extends Node {

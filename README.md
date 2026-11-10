@@ -1,32 +1,38 @@
 # GAMA Shared Models
 
-GAMA Shared Models adds a **Shared Models** folder above **User** in GAMA's
+GAMA Shared Models adds a **Community** folder above **User** in GAMA's
 navigator. It discovers community projects from
 [gama-platform/gama.models](https://github.com/gama-platform/gama.models) and
 copies only the projects the user explicitly chooses into their workspace.
 
 ## Browsing and importing
 
-Expand **Shared Models** and then either source:
+Expand **Community** and then either source:
 
 - **Published models** reads the public JSON registry, including version,
   description, author, license and GAMA compatibility information.
-- **Repository projects** discovers `.project` folders in the repository and
-  retains their categories, such as Generic and Thematic.
+- **Repository projects** lists `.project` folders in the repository, grouped
+  by category such as Generic and Thematic.
 
-Expand a project to browse its file hierarchy. Right-click a project for
-**Show details...**, **Open source page**, or **Import into workspace...**.
-Double-clicking a file opens its source page externally; for registry archives,
-this opens the model's homepage or download page, not an individual file preview.
+Projects use the regular navigator presentation: **remote project, N models**.
+Expanding a project shows metadata sub-items (author when available, description,
+version, license, repository, etc.), never its files or folder hierarchy. Published
+metadata and model counts are loaded with the catalogue, without downloading archives.
+Unknown model counts are explicitly marked unavailable rather than shown as zero.
+Right-click a project for **Import into workspace**, **Properties**,
+**Open repository**, or **Refresh**.
+The Community hierarchy opts out of workspace resource actions, so the
+standard Import/Copy/Paste/Delete and resource Properties entries are hidden.
+Refresh uses the navigator's existing action and F5 binding, without a duplicate.
 
-Browsing never creates workspace projects. Registry ZIP archives are downloaded
-to the plug-in cache for file listing; repository file listings come from
-GitHub's tree API. Import asks for a local project name, copies the complete
-selected project and opens it under User. Existing projects and folders are
-never overwritten. Imported projects are independent local copies, not linked
-to GitHub, and record their source and version/commit as project properties.
+Browsing never creates workspace projects or downloads project archives.
+Repository project counts come from GitHub's tree API. Import asks for a local
+project name, copies the complete selected project and opens it under User.
+Existing projects and folders are never overwritten. Imported projects are
+independent local copies, not linked to GitHub, and record their source and
+version/commit as project properties.
 
-**Refresh/F5** discards the displayed snapshots and reloads on expansion.
+**Refresh/F5** reloads the catalogues on expansion.
 Network work runs in cancellable background jobs. Cached catalogue metadata can
 be used after a network failure, with an explicit stale/offline message.
 GitHub authentication is not required; anonymous API rate limits still apply.
@@ -35,8 +41,8 @@ This first version imports **ZIP projects only**, using the latest registered
 version or a commit-pinned repository snapshot. It verifies registry archive
 sizes and SHA-256 checksums, limits downloads to 200 MiB and extraction to
 1 GiB/10,000 entries, and rejects unsafe paths. Temporary extracted files are
-removed after browsing/importing; downloaded archives and JSON metadata remain
-in the plug-in state cache for reuse.
+removed after import; downloaded archives and JSON metadata remain in the
+plug-in state cache for reuse.
 
 Projects with linked resources, ambiguous multi-project archives or missing
 project natures fail explicitly rather than being partially imported. Legacy
