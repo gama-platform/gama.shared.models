@@ -2,14 +2,17 @@
 <?compositeArtifactRepository version="1.0.0"?>
 <repository name="GAMA Shared Models" type="org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository" version="1.0.0">
   <properties size="1">
-    <property name="p2.timestamp" value="1793863438300" />
+    <property name="p2.timestamp" value="1794940160185" />
   </properties>
-  <children size="2">
+  <children size="3">
     <child location="releases/41982492602-1" />
     <child location="releases/41986901902-1" />
+    <child location="releases/42851664910-2" />
   </children>
-  <references size="2">
+  <references size="4">
     <repository uri="https://download.eclipse.org/releases/2026-03/" url="https://download.eclipse.org/releases/2026-03/" type="0" options="1" />
     <repository uri="https://download.eclipse.org/releases/2026-03/" url="https://download.eclipse.org/releases/2026-03/" type="1" options="1" />
+    <repository uri="https://updates.gama-platform.org/0.0.0/" url="https://updates.gama-platform.org/0.0.0/" type="0" options="1" />
+    <repository uri="https://updates.gama-platform.org/0.0.0/" url="https://updates.gama-platform.org/0.0.0/" type="1" options="1" />
   </references>
 </repository>
