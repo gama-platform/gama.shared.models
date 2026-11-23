@@ -6,7 +6,7 @@ import re
 import shutil
 import time
 import xml.etree.ElementTree as ET
-from zipfile import ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile
 
 
 DEPENDENCY_SITES = (
@@ -61,9 +61,13 @@ def assemble(incoming, site, release):
         ET.indent(root)
         filename = "compositeContent.xml" if kind == "Metadata" else "compositeArtifacts.xml"
         instruction = "compositeMetadataRepository" if kind == "Metadata" else "compositeArtifactRepository"
-        (site / filename).write_bytes(
-            f'<?xml version="1.0" encoding="UTF-8"?>\n<?{instruction} version="1.0.0"?>\n'.encode()
-            + ET.tostring(root, encoding="utf-8") + b"\n")
+        document = (f'<?xml version="1.0" encoding="UTF-8"?>\n<?{instruction} version="1.0.0"?>\n'.encode()
+                    + ET.tostring(root, encoding="utf-8") + b"\n")
+        (site / filename).write_bytes(document)
+        # Tycho requests the .jar form first; GitHub Pages may answer 503 instead of 404 for a
+        # missing file, which Tycho treats as fatal. Publish the jar so that request gets a 200.
+        with ZipFile(site / filename.replace(".xml", ".jar"), "w", ZIP_DEFLATED) as archive:
+            archive.writestr(filename, document)
     (site / "p2.index").write_text(
         "version=1\nmetadata.repository.factory.order=compositeContent.xml,!\n"
         "artifact.repository.factory.order=compositeArtifacts.xml,!\n", encoding="utf-8")
